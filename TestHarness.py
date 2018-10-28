@@ -14,13 +14,23 @@ You'll need to import the tests here and then create an instance of each one
 you want to run. The tests automatically register themselves with the
 forwarder, so they will magically be run.
 """
+
+
 def tests_to_run(forwarder):
     BasicTest.BasicTest("BasicTest", forwarder, "README")
     RandomDropTest.RandomDropTest("RandDropTest", forwarder, "README")
     SackRandomDropTest.SackRandomDropTest("SackTest", forwarder, "README")
-    SeqnoAndTypeTest.SeqnoAndTypeTest("BinaryDrpDat", f, "b.png", seqnos = range(0,10000,2), types = ["dat"])
-    SeqnoAndTypeTest.SeqnoAndTypeTest("DropSyn", f, "b.png", seqnos = range(0,10000), types = ["syn"])
-    SeqnoAndTypeTest.SeqnoAndTypeTest("DropAtBeginning", f, "b.png", seqnos = range(0,10), types = ["syn", "dat"])
+    SeqnoAndTypeTest.SeqnoAndTypeTest(
+        "BinaryDrpDat", f, "b.png", seqnos=range(
+            0, 10000, 2), types=["dat"])
+    SeqnoAndTypeTest.SeqnoAndTypeTest(
+        "DropSyn", f, "b.png", seqnos=range(
+            0, 10000), types=["syn"])
+    SeqnoAndTypeTest.SeqnoAndTypeTest(
+        "DropAtBeginning", f, "b.png", seqnos=range(
+            0, 10), types=[
+            "syn", "dat"])
+
 
 """
 Testing is divided into two pieces: this forwarder and a set of test cases in
@@ -54,17 +64,22 @@ Once the sender has terminated, we kill the receiver and call the test case's
 result() method, which should do something sensible to determine whether or not
 the test case passed.
 """
+
+
 class Forwarder(object):
     """
     The packet forwarder for testing
     """
+
     def __init__(self, sender_path, receiver_path, port, debug):
         if not os.path.exists(sender_path):
             raise ValueError("Could not find sender path: %s" % sender_path)
         self.sender_path = sender_path
 
         if not os.path.exists(receiver_path):
-            raise ValueError("Could not find receiver path: %s" % receiver_path)
+            raise ValueError(
+                "Could not find receiver path: %s" %
+                receiver_path)
         self.receiver_path = receiver_path
 
         # book keeping for tests
@@ -74,16 +89,17 @@ class Forwarder(object):
         self.out_queue = []
         self.in_queue = []
         self.test_state = "INIT"
-        self.tick_interval = 0.001 # 1ms
+        self.tick_interval = 0.001  # 1ms
         self.last_tick = time.time()
-        self.timeout = 300. # seconds
+        self.timeout = 300.  # seconds
         self.test_results = []
         self.debug = debug
 
         # network stuff
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.settimeout(0.01) # make this a very short timeout, por que no?
+        # make this a very short timeout, por que no?
+        self.sock.settimeout(0.01)
         self.sock.bind(('', self.port))
 
         self.receiver_port = self.port + 1
@@ -102,7 +118,10 @@ class Forwarder(object):
 
     def _send(self, packet):
         """ Send a packet. """
-        packet.update_packet(seqno=packet.seqno + self.start_seqno_base, update_checksum=False)
+        packet.update_packet(
+            seqno=packet.seqno +
+            self.start_seqno_base,
+            update_checksum=False)
         self.sock.sendto(packet.full_packet, packet.address)
 
     def register_test(self, testcase, input_file):
@@ -117,14 +136,15 @@ class Forwarder(object):
             except (KeyboardInterrupt, SystemExit):
                 self.finish()
                 exit()
-            except:
+            except BaseException:
                 """ If anything happens, record as a failure.
                 """
                 print "%s fail" % t.name
-            self.finish() # write results to file. Do this every test for partial results.
+            # write results to file. Do this every test for partial results.
+            self.finish()
             time.sleep(1)
 
-    def handle_receive(self, message, address, sackMode = False):
+    def handle_receive(self, message, address, sackMode=False):
         """
         Every time we receive a new packet, this is called. We first check if
         this is the first packet we've seen -- if so, we need to learn the
@@ -146,9 +166,17 @@ class Forwarder(object):
 
         if self.test_state == "READY":
             if address == self.receiver_addr:
-                p = Packet(message, self.sender_addr, self.start_seqno_base, sackMode)
+                p = Packet(
+                    message,
+                    self.sender_addr,
+                    self.start_seqno_base,
+                    sackMode)
             elif address == self.sender_addr:
-                p = Packet(message, self.receiver_addr, self.start_seqno_base, sackMode)
+                p = Packet(
+                    message,
+                    self.receiver_addr,
+                    self.start_seqno_base,
+                    sackMode)
             else:
                 # Ignore packets from unknown sources
                 return
@@ -170,14 +198,13 @@ class Forwarder(object):
             os.remove(self.recv_outfile)
 
         receiverCmd = ["python", self.receiver_path,
-                                     "-p", str(self.receiver_port)
-                                    ]
-
+                       "-p", str(self.receiver_port)
+                       ]
 
         senderCmd = ["python", self.sender_path,
-                                   "-f", input_file,
-                                   "-p", str(self.port)
-                                  ]
+                     "-f", input_file,
+                     "-p", str(self.port)
+                     ]
 
         if self.current_test.sackMode:
             receiverCmd.append("-k")
@@ -189,7 +216,7 @@ class Forwarder(object):
 
         receiver = subprocess.Popen(receiverCmd)
 
-        time.sleep(0.2) # make sure the receiver is started first
+        time.sleep(0.2)  # make sure the receiver is started first
 
         sender = subprocess.Popen(senderCmd)
         try:
@@ -197,7 +224,8 @@ class Forwarder(object):
             while sender.poll() is None:
                 try:
                     message, address = self.sock.recvfrom(4096)
-                    self.handle_receive(message, address, self.current_test.sackMode)
+                    self.handle_receive(
+                        message, address, self.current_test.sackMode)
                 except socket.timeout:
                     pass
                 if time.time() - self.last_tick > self.tick_interval:
@@ -231,13 +259,14 @@ class Forwarder(object):
             if tr is not None and isinstance(tr, TestResult.TestResult):
                 self.test_results.append(tr)
                 print str(tr)
-        except:
-            pass # some tests don't have test results
+        except BaseException:
+            pass  # some tests don't have test results
+
 
 class Packet(object):
     def __init__(self, packet, address, start_seqno_base, sackMode):
-        self.full_packet = packet  #message content
-        self.address = address # where the packet is destined to
+        self.full_packet = packet  # message content
+        self.address = address  # where the packet is destined to
         self.sack_str = ''
 
         # this is for making sure we have 0-indexed seq numbers throughout the
@@ -245,11 +274,14 @@ class Packet(object):
         self.start_seqno_base = start_seqno_base
         try:
             pieces = packet.split('|')
-            self.msg_type, self.seqno_str = pieces[0:2] # first two elements always treated as msg type and seqno
-            self.checksum = pieces[-1] # last is always treated as checksum
-            self.data = '|'.join(pieces[2:-1]) # everything in between is considered data
+            # first two elements always treated as msg type and seqno
+            self.msg_type, self.seqno_str = pieces[0:2]
+            self.checksum = pieces[-1]  # last is always treated as checksum
+            # everything in between is considered data
+            self.data = '|'.join(pieces[2:-1])
             if sackMode and self.msg_type == "sack":
-                self.seqno = int(self.seqno_str.split(';')[0]) - self.start_seqno_base
+                self.seqno = int(self.seqno_str.split(';')[
+                                 0]) - self.start_seqno_base
                 self.sack_str = self.seqno_str.split(';')[1]
             else:
                 self.seqno = int(self.seqno_str) - self.start_seqno_base
@@ -264,7 +296,13 @@ class Packet(object):
             # on them.
             self.bogon = True
 
-    def update_packet(self, msg_type=None, seqno=None, data=None, full_packet=None, update_checksum=True):
+    def update_packet(
+            self,
+            msg_type=None,
+            seqno=None,
+            data=None,
+            full_packet=None,
+            update_checksum=True):
         """
         This function handles safely changing the contents of a packet. By
         default, we re-compute the checksum every time the packet is updated.
@@ -274,22 +312,25 @@ class Packet(object):
         Note that the checksum is calculated over the NON-0-indexed sequence number.
         """
         if not self.bogon:
-            if msg_type == None:
+            if msg_type is None:
                 msg_type = self.msg_type
-            if seqno == None:
+            if seqno is None:
                 seqno = self.seqno
-            if data == None:
+            if data is None:
                 data = self.data
 
-            if msg_type == "ack": # doesn't have a data field, so handle separately
+            if msg_type == "ack":  # doesn't have a data field, so handle separately
                 body = "%s|%d|" % (msg_type, seqno)
-                checksum_body = "%s|%d|" % (msg_type, seqno + self.start_seqno_base)
+                checksum_body = "%s|%d|" % (
+                    msg_type, seqno + self.start_seqno_base)
             elif msg_type == "sack":
                 body = "%s|%d;%s|" % (msg_type, seqno, self.sack_str)
-                checksum_body = "%s|%d;%s|" % (msg_type, seqno + self.start_seqno_base, self.sack_str)
+                checksum_body = "%s|%d;%s|" % (
+                    msg_type, seqno + self.start_seqno_base, self.sack_str)
             else:
-                body = "%s|%d|%s|" % (msg_type,seqno,data)
-                checksum_body = "%s|%d|%s|" % (msg_type, seqno + self.start_seqno_base, data)
+                body = "%s|%d|%s|" % (msg_type, seqno, data)
+                checksum_body = "%s|%d|%s|" % (
+                    msg_type, seqno + self.start_seqno_base, data)
             if update_checksum:
                 checksum = Checksum.generate_checksum(checksum_body)
             else:
@@ -301,10 +342,11 @@ class Packet(object):
             if full_packet:
                 self.full_packet = full_packet
             else:
-                self.full_packet = "%s%s" % (body,checksum)
+                self.full_packet = "%s%s" % (body, checksum)
 
     def __repr__(self):
         return "%s|%s|...|%s" % (self.msg_type, self.seqno, self.checksum)
+
 
 if __name__ == "__main__":
     # Don't modify anything below this line!
@@ -320,9 +362,9 @@ if __name__ == "__main__":
         print "-d | --debug Enable debug mode"
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:],
-                                "p:s:r:d", ["port=", "sender=", "receiver=", "debug="])
-    except:
+        opts, args = getopt.getopt(sys.argv[1:], "p:s:r:d", [
+                                   "port=", "sender=", "receiver=", "debug="])
+    except BaseException:
         usage()
         exit()
 
@@ -331,7 +373,7 @@ if __name__ == "__main__":
     receiver = "Receiver.py"
     debug = False
 
-    for o,a in opts:
+    for o, a in opts:
         if o in ("-p", "--port"):
             port = int(a)
         elif o in ("-s", "--sender"):

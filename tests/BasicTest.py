@@ -8,13 +8,15 @@ to implement a new handle_packet(), handle_tick(), and/or result() method as
 needed.
 """
 
+
 class BasicTest(object):
     """ A test case should define the following:
         - handle_packet: a method to be called whenever a packet arrives
         - handle_tick: a method to be called at every timestemp
         - result: a method to be called when it's time to return a result
     """
-    def __init__(self, name, forwarder, input_file, sackMode = False):
+
+    def __init__(self, name, forwarder, input_file, sackMode=False):
         self.name = name
         self.forwarder = forwarder
         self.sackMode = sackMode

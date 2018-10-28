@@ -10,6 +10,8 @@ Note that to implement this we just needed to override the handle_packet()
 method -- this gives you an example of how to extend the basic test case to
 create your own.
 """
+
+
 class RandomDropTest(BasicTest):
     def handle_packet(self):
         for p in self.forwarder.in_queue:

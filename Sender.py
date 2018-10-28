@@ -7,6 +7,8 @@ import BasicSender
 '''
 This is a skeleton sender class. Create a fantastic transport protocol here.
 '''
+
+
 class Sender(BasicSender.BasicSender):
     def __init__(self, dest, port, filename, debug=False, sackMode=False):
         super(Sender, self).__init__(dest, port, filename, debug)
@@ -15,9 +17,10 @@ class Sender(BasicSender.BasicSender):
 
     # Main sending loop.
     def start(self):
-      # add things here
-      pass
-        
+        # add things here
+        pass
+
+
 '''
 This will be run if you run this script from the command line. You should not
 change any of this; the grader may rely on the behavior here to test your
@@ -34,9 +37,9 @@ if __name__ == "__main__":
         print "-k | --sack Enable selective acknowledgement mode"
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:],
-                               "f:p:a:dk", ["file=", "port=", "address=", "debug=", "sack="])
-    except:
+        opts, args = getopt.getopt(sys.argv[1:], "f:p:a:dk", [
+                                   "file=", "port=", "address=", "debug=", "sack="])
+    except BaseException:
         usage()
         exit()
 
@@ -46,7 +49,7 @@ if __name__ == "__main__":
     debug = False
     sackMode = False
 
-    for o,a in opts:
+    for o, a in opts:
         if o in ("-f", "--file="):
             filename = a
         elif o in ("-p", "--port="):
@@ -58,7 +61,7 @@ if __name__ == "__main__":
         elif o in ("-k", "--sack="):
             sackMode = True
 
-    s = Sender(dest,port,filename,debug, sackMode)
+    s = Sender(dest, port, filename, debug, sackMode)
     try:
         s.start()
     except (KeyboardInterrupt, SystemExit):
