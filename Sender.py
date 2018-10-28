@@ -8,6 +8,47 @@ import BasicSender
 This is a skeleton sender class. Create a fantastic transport protocol here.
 '''
 
+''' TODO
+To initiate a connection, send a syn message with any initial sequence number.
+After sending the syn message,
+    the sender waits for an ack packet to finish a handshake
+After the handshake,
+    send actual data packets in the same connection using the data
+    message type, adjusting the sequence number appropriately.
+    the last data in a connection should be transmitted with the fin message
+    type to signal the receiver that the connection is complete.
+
+should split the input file into appropriately sized chunks of data,
+specify an initial sequence number for the connection,
+and append a checksum to each packet. The sequence number
+should increment by one for each additional packet in a connection.
+Functions for generating and validating packet checksums will be provided
+for you (see Checksum.py).
+
+Your sender should provide reliable service under the following network conditions:
+- Loss: arbitrary levels; you should be able to handle periods of 100% packet loss.
+- Corruption: arbitrary types and frequency.
+- Re-ordering: may arrive in any order, and
+- Duplication: you could see a packet any number of times.
+- Delay: packets may be delayed indefinitely (but in practice, generally not more than
+10s).
+
+Your sender should be invoked with the following command:
+python Sender.py -f <input file>
+
+● The sender should implement a 500ms retransmission timer to automatically
+retransmit packets that were never acknowledged (potentially due to ack packets
+being lost). We do not expect you to use an adaptive timeout.
+● Your sender should support a window size of 7 packets (i.e., 7 unacknowledged
+packets).
+● Your sender should roughly meet or exceed the performance (in both time and number
+of packets required to complete a transfer) of a properly implemented Go Back N based
+BEARS-TP sender.
+● Your sender should be able to handle arbitrary message data (i.e., it should be able to
+send an image file just as easily as a text file).
+● Any packets received with an invalid checksum should be ignored.
+'''
+
 
 class Sender(BasicSender.BasicSender):
     def __init__(self, dest, port, filename, debug=False, sackMode=False):
