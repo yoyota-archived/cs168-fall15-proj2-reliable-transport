@@ -1,5 +1,6 @@
 # pylint: disable=W0621, W0105
 
+from __future__ import print_function
 import sys
 import getopt
 
