@@ -1,14 +1,16 @@
+# pylint: disable=W0621, W0105
+
 import sys
 import getopt
 
-import Checksum
+# import Checksum
 import BasicSender
 
-'''
+"""
 This is a skeleton sender class. Create a fantastic transport protocol here.
-'''
+"""
 
-''' TODO
+""" TODO
 To initiate a connection, send a syn message with any initial sequence number.
 After sending the syn message,
     the sender waits for an ack packet to finish a handshake
@@ -36,18 +38,18 @@ Your sender should provide reliable service under the following network conditio
 Your sender should be invoked with the following command:
 python Sender.py -f <input file>
 
-● The sender should implement a 500ms retransmission timer to automatically
+The sender should implement a 500ms retransmission timer to automatically
 retransmit packets that were never acknowledged (potentially due to ack packets
 being lost). We do not expect you to use an adaptive timeout.
-● Your sender should support a window size of 7 packets (i.e., 7 unacknowledged
+Your sender should support a window size of 7 packets (i.e., 7 unacknowledged
 packets).
-● Your sender should roughly meet or exceed the performance (in both time and number
+Your sender should roughly meet or exceed the performance (in both time and number
 of packets required to complete a transfer) of a properly implemented Go Back N based
 BEARS-TP sender.
-● Your sender should be able to handle arbitrary message data (i.e., it should be able to
+Your sender should be able to handle arbitrary message data (i.e., it should be able to
 send an image file just as easily as a text file).
-● Any packets received with an invalid checksum should be ignored.
-'''
+Any packets received with an invalid checksum should be ignored.
+"""
 
 
 class Sender(BasicSender.BasicSender):
@@ -69,17 +71,18 @@ submission.
 '''
 if __name__ == "__main__":
     def usage():
-        print "BEARS-TP Sender"
-        print "-f FILE | --file=FILE The file to transfer; if empty reads from STDIN"
-        print "-p PORT | --port=PORT The destination port, defaults to 33122"
-        print "-a ADDRESS | --address=ADDRESS The receiver address or hostname, defaults to localhost"
-        print "-d | --debug Print debug messages"
-        print "-h | --help Print this usage message"
-        print "-k | --sack Enable selective acknowledgement mode"
+        print("BEARS-TP Sender")
+        print("-f FILE | --file=FILE The file to transfer; if empty reads from STDIN")
+        print("-p PORT | --port=PORT The destination port, defaults to 33122")
+        print("-a ADDRESS | --address=ADDRESS The receiver address or hostname, defaults to localhost")
+        print("-d | --debug Print debug messages")
+        print("-h | --help Print this usage message")
+        print("-k | --sack Enable selective acknowledgement mode)")
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "f:p:a:dk", [
-                                   "file=", "port=", "address=", "debug=", "sack="])
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            "f:p:a:dk", ["file=", "port=", "address=", "debug=", "sack="])
     except BaseException:
         usage()
         exit()
@@ -87,7 +90,7 @@ if __name__ == "__main__":
     port = 33122
     dest = "localhost"
     filename = None
-    debug = False
+    debug = True
     sackMode = False
 
     for o, a in opts:
