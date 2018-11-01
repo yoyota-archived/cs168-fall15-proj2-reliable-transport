@@ -4,7 +4,7 @@ from __future__ import print_function
 import sys
 import getopt
 
-# from Checksum import validate_checksum
+from Checksum import validate_checksum
 import BasicSender
 
 """
@@ -61,12 +61,12 @@ class Sender(BasicSender.BasicSender):
         super(Sender, self).__init__(dest, port, filename, debug)
         self.sackMode = sackMode
         self.debug = debug
+        self.timeout = 10
+        self.current_seqno = 0
+        self.seqnums = {}  # enforce single instance of each seqno
         # TODO states
         # queue seqno
-        # timeout
         # self.max_buf_size
-        # self.current_seqno
-        # self.seqnums = {}  # enforce single instance of each seqno
 
     # Main sending loop.
     """
@@ -78,13 +78,38 @@ class Sender(BasicSender.BasicSender):
     finish transmit
     """
 
+    def _retransmit(self):
+        self.send(self.seqnums[self.current_seqno])
+        msg = self.receive(timeout=self.timeout)
+        self._handle_packet(msg)
+
+    def _handshake(self):
+        syn = self.make_packet('syn', self.current_seqno, '')
+        self.seqnums[self.current_seqno] = syn
+        self.send(syn)
+        msg = self.receive(timeout=self.timeout)
+        self._handle_packet(msg)
+
+    def _validate_packet(self, msg):
+        # Loss, Delay, Corruption
+        if not msg or not validate_checksum(msg):
+            return False
+
+        # Re-ordering, Duplication
+        ack_seqno = self.split_packet(msg)[1]
+        if self.current_seqno + 1 == ack_seqno:
+            return False
+        return True
+
+    def _handle_packet(self, msg):
+        if not self._validate_packet(msg):
+            self._retransmit()
+            return
+        del self.seqnums[self.current_seqno]
+        self.current_seqno += 1
+
     def start(self):
-        pass
-        # sandboxing
-        # packet = self.make_packet('syn', 0, '')
-        # self.send(packet)
-        # msg = self.receive()
-        # print(validate_checksum(msg))
+        self._handshake()
 
 
 '''
