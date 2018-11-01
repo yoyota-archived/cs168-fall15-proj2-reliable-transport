@@ -371,7 +371,7 @@ if __name__ == "__main__":
     port = 33123
     sender = "Sender.py"
     receiver = "Receiver.py"
-    debug = True
+    debug = False
 
     for o, a in opts:
         if o in ("-p", "--port"):

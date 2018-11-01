@@ -208,7 +208,7 @@ if __name__ == "__main__":
         exit()
 
     port = 33122
-    debug = True
+    debug = False
     timeout = 10
     sackMode = False
 

@@ -141,7 +141,7 @@ if __name__ == "__main__":
     port = 33122
     dest = "localhost"
     filename = None
-    debug = True
+    debug = False
     sackMode = False
 
     for o, a in opts:
