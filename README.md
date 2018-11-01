@@ -20,4 +20,7 @@ Your sender should provide reliable service under the following network conditio
 ### edge cases
 - TODO related #2 issue
 
+### packet loss article
+https://www.performancevision.com/blog/network-packet-loss-retransmissions-and-duplicate-acknowledgements/
+
 

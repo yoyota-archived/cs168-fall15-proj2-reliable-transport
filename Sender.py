@@ -61,7 +61,7 @@ class Sender(BasicSender.BasicSender):
         super(Sender, self).__init__(dest, port, filename, debug)
         self.sackMode = sackMode
         self.debug = debug
-        self.timeout = 10
+        self.timeout = 0.5
         self.current_seqno = 0
         self.seqnums = {}  # enforce single instance of each seqno
         # TODO states
@@ -82,11 +82,13 @@ class Sender(BasicSender.BasicSender):
         self.send(self.seqnums[self.current_seqno])
         msg = self.receive(timeout=self.timeout)
         self._handle_packet(msg)
+        
+    def _send_packet(self, packet):
+        self.seqnums[self.current_seqno] = packet
+        self.send(packet)
 
-    def _handshake(self):
-        syn = self.make_packet('syn', self.current_seqno, '')
-        self.seqnums[self.current_seqno] = syn
-        self.send(syn)
+    def _stop_and_wait_transport(self, packet):
+        self._send_packet(packet)
         msg = self.receive(timeout=self.timeout)
         self._handle_packet(msg)
 
@@ -109,8 +111,16 @@ class Sender(BasicSender.BasicSender):
         self.current_seqno += 1
 
     def start(self):
-        self._handshake()
-
+        syn = self.make_packet('syn', self.current_seqno, '')
+        self._stop_and_wait_transport(syn)
+        with open(filename) as f:
+            chunk = None
+            while chunk != '':
+                chunk = f.read(1000)
+                dat = self.make_packet('dat', self.current_seqno, chunk)
+                self._stop_and_wait_transport(dat)
+        fin = self.make_packet('fin', self.current_seqno, '')
+        self._stop_and_wait_transport(fin)
 
 '''
 This will be run if you run this script from the command line. You should not
