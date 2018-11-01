@@ -4,8 +4,7 @@ from __future__ import print_function
 import sys
 import getopt
 
-# import Checksum
-from Checksum import validate_checksum
+# from Checksum import validate_checksum
 import BasicSender
 
 """
@@ -96,9 +95,12 @@ submission.
 if __name__ == "__main__":
     def usage():
         print("BEARS-TP Sender")
-        print("-f FILE | --file=FILE The file to transfer; if empty reads from STDIN")
+        print("-f FILE | --file=FILE The file to transfer;"
+              " if empty reads from STDIN")
         print("-p PORT | --port=PORT The destination port, defaults to 33122")
-        print("-a ADDRESS | --address=ADDRESS The receiver address or hostname, defaults to localhost")
+        print("-a ADDRESS | --address=ADDRESS"
+              " The receiver address or hostname,"
+              " defaults to localhost")
         print("-d | --debug Print debug messages")
         print("-h | --help Print this usage message")
         print("-k | --sack Enable selective acknowledgement mode)")
