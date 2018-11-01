@@ -5,6 +5,7 @@ import sys
 import getopt
 
 # import Checksum
+from Checksum import validate_checksum
 import BasicSender
 
 """
@@ -12,15 +13,19 @@ This is a skeleton sender class. Create a fantastic transport protocol here.
 """
 
 """ TODO
+1. Do handshake
 To initiate a connection, send a syn message with any initial sequence number.
 After sending the syn message,
     the sender waits for an ack packet to finish a handshake
+
+2. transmit data
 After the handshake,
     send actual data packets in the same connection using the data
     message type, adjusting the sequence number appropriately.
     the last data in a connection should be transmitted with the fin message
     type to signal the receiver that the connection is complete.
 
+3. data file reading
 should split the input file into appropriately sized chunks of data,
 specify an initial sequence number for the connection,
 and append a checksum to each packet. The sequence number
@@ -28,6 +33,7 @@ should increment by one for each additional packet in a connection.
 Functions for generating and validating packet checksums will be provided
 for you (see Checksum.py).
 
+4. handle error cases for reliable transmit
 Your sender should provide reliable service under the following network conditions:
 - Loss: arbitrary levels; you should be able to handle periods of 100% packet loss.
 - Corruption: arbitrary types and frequency.
@@ -36,9 +42,7 @@ Your sender should provide reliable service under the following network conditio
 - Delay: packets may be delayed indefinitely (but in practice, generally not more than
 10s).
 
-Your sender should be invoked with the following command:
-python Sender.py -f <input file>
-
+5. Performance
 The sender should implement a 500ms retransmission timer to automatically
 retransmit packets that were never acknowledged (potentially due to ack packets
 being lost). We do not expect you to use an adaptive timeout.
@@ -58,11 +62,30 @@ class Sender(BasicSender.BasicSender):
         super(Sender, self).__init__(dest, port, filename, debug)
         self.sackMode = sackMode
         self.debug = debug
+        # TODO states
+        # queue seqno
+        # timeout
+        # self.max_buf_size
+        # self.current_seqno
+        # self.seqnums = {}  # enforce single instance of each seqno
 
     # Main sending loop.
+    """
+    do handshake
+    while reading file f
+        transmit data
+        if error
+            handle error case
+    finish transmit
+    """
+
     def start(self):
-        # add things here
         pass
+        # sandboxing
+        # packet = self.make_packet('syn', 0, '')
+        # self.send(packet)
+        # msg = self.receive()
+        # print(validate_checksum(msg))
 
 
 '''
