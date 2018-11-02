@@ -6,6 +6,7 @@ from Checksum import validate_checksum
 
 
 class Sender(BasicSender.BasicSender):
+    # pylint: disable=W0621
     def __init__(self, dest, port, filename, debug=False, sackMode=False):
         super(Sender, self).__init__(dest, port, filename, debug)
         self.sackMode = sackMode
@@ -40,7 +41,7 @@ class Sender(BasicSender.BasicSender):
         self.send(syn)
 
     def _empty_out_window(self):
-        while len(self.window) != 0:
+        while self.window:
             self._handle_received_packet()
 
     def _adjust_window_boundary(self):
