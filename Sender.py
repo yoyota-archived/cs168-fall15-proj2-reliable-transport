@@ -83,12 +83,16 @@ class Sender(BasicSender.BasicSender):
         msg = self.receive(timeout=self.timeout)
         self._handle_packet(msg)
 
-    def _send_packet(self, packet):
-        self.seqnums[self.current_seqno] = packet
-        self.send(packet)
+    def _handle_packet(self, msg):
+        if not self._validate_packet(msg):
+            self._retransmit()
+            return
+        del self.seqnums[self.current_seqno]
+        self.current_seqno += 1
 
     def _stop_and_wait_transport(self, packet):
-        self._send_packet(packet)
+        self.seqnums[self.current_seqno] = packet
+        self.send(packet)
         msg = self.receive(timeout=self.timeout)
         self._handle_packet(msg)
 
@@ -102,13 +106,6 @@ class Sender(BasicSender.BasicSender):
         if self.current_seqno + 1 == ack_seqno:
             return False
         return True
-
-    def _handle_packet(self, msg):
-        if not self._validate_packet(msg):
-            self._retransmit()
-            return
-        del self.seqnums[self.current_seqno]
-        self.current_seqno += 1
 
     def start(self):
         syn = self.make_packet('syn', self.current_seqno, '')
