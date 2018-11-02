@@ -14,7 +14,7 @@ class Sender(BasicSender.BasicSender):
         self.timeout = 0.4
         self.current_seqno = 0
         self.window = {}
-        self.window_size = 1
+        self.window_size = 7
 
     def _retransmit(self):
         for n in sorted(self.window.keys()):
