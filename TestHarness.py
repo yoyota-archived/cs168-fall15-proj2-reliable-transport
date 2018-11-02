@@ -6,7 +6,7 @@ import time
 
 import Checksum
 from tests import BasicTest, RandomDropTest, SackRandomDropTest, \
-    SeqnoAndTypeTest, DuplicateAckTest, NonsenseTest, FinTest
+    SeqnoAndTypeTest, DuplicateAckTest, CorruptionTest, FinTest
 
 """
 Add the tests you want to run here. Don't modify anything outside this function!
@@ -34,7 +34,7 @@ def tests_to_run(forwarder):
 
     # Custom test cases
     DuplicateAckTest.DuplicateAckTest("DuplicateAckTest", forwarder, "README")
-    NonsenseTest.NonsenseTest("NonsenseTest", forwarder, "README")
+    CorruptionTest.CorruptionTest("NonsenseTest", forwarder, "README")
     FinTest.FinTest("FinTest", forwarder, "README")
 
 
