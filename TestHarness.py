@@ -5,7 +5,8 @@ import subprocess
 import time
 
 import Checksum
-from tests import BasicTest, RandomDropTest, SackRandomDropTest, SeqnoAndTypeTest
+from tests import BasicTest, RandomDropTest, SackRandomDropTest, \
+    SeqnoAndTypeTest, DuplicateAckTest, NonsenseTest, FinTest
 
 """
 Add the tests you want to run here. Don't modify anything outside this function!
@@ -18,18 +19,23 @@ forwarder, so they will magically be run.
 
 def tests_to_run(forwarder):
     BasicTest.BasicTest("BasicTest", forwarder, "README")
-    # RandomDropTest.RandomDropTest("RandDropTest", forwarder, "README")
-    # SackRandomDropTest.SackRandomDropTest("SackTest", forwarder, "README")
-    # SeqnoAndTypeTest.SeqnoAndTypeTest(
-    #     "BinaryDrpDat", f, "b.png", seqnos=range(
-    #         0, 10000, 2), types=["dat"])
-    # SeqnoAndTypeTest.SeqnoAndTypeTest(
-    #     "DropSyn", f, "b.png", seqnos=range(
-    #         0, 10000), types=["syn"])
-    # SeqnoAndTypeTest.SeqnoAndTypeTest(
-    #     "DropAtBeginning", f, "b.png", seqnos=range(
-    #         0, 10), types=[
-    #         "syn", "dat"])
+    RandomDropTest.RandomDropTest("RandDropTest", forwarder, "README")
+    SackRandomDropTest.SackRandomDropTest("SackTest", forwarder, "README")
+    SeqnoAndTypeTest.SeqnoAndTypeTest(
+        "BinaryDrpDat", f, "b.png", seqnos=range(
+            0, 10000, 2), types=["dat"])
+    SeqnoAndTypeTest.SeqnoAndTypeTest(
+        "DropSyn", f, "b.png", seqnos=range(
+            0, 10000), types=["syn"])
+    SeqnoAndTypeTest.SeqnoAndTypeTest(
+        "DropAtBeginning", f, "b.png", seqnos=range(
+            0, 10), types=[
+            "syn", "dat"])
+
+    # Custom test cases
+    DuplicateAckTest.DuplicateAckTest("DuplicateAckTest", forwarder, "README")
+    NonsenseTest.NonsenseTest("NonsenseTest", forwarder, "README")
+    FinTest.FinTest("FinTest", forwarder, "README")
 
 
 """

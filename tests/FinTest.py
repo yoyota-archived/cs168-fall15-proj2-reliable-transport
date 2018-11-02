@@ -5,11 +5,11 @@ from BasicTest import *
 """
 This test check nonsense data on the files
 """
-class StartTest(BasicTest):
+class FinTest(BasicTest):
     count = 0
     def handle_packet(self):
         for p in self.forwarder.in_queue:
-            if p.msg_type == 'start' and self.count < 10:
+            if p.msg_type == 'fin' and self.count < 10:
                 pass
             else:
                 self.forwarder.out_queue.append(p)
