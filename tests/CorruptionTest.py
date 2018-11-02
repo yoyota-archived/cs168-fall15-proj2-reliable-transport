@@ -5,7 +5,7 @@ from BasicTest import *
 """
 This test check nonsense data on the files
 """
-class NonsenseTest(BasicTest):
+class CorruptionTest(BasicTest):
     def handle_packet(self):
         for p in self.forwarder.in_queue:
             if random.randint(1,3) == 1:            #change checksum
