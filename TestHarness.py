@@ -34,7 +34,7 @@ def tests_to_run(forwarder):
 
     # Custom test cases
     DuplicateAckTest.DuplicateAckTest("DuplicateAckTest", forwarder, "README")
-    CorruptionTest.CorruptionTest("NonsenseTest", forwarder, "README")
+    CorruptionTest.CorruptionTest("Corruption", forwarder, "README")
     FinTest.FinTest("FinTest", forwarder, "README")
 
 
