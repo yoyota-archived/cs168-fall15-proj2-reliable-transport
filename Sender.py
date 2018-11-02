@@ -102,8 +102,9 @@ class Sender(BasicSender.BasicSender):
             return False
 
         # Re-ordering, Duplication
-        ack_seqno = self.split_packet(msg)[1]
-        if self.current_seqno + 1 == ack_seqno:
+        ack_seqno = int(self.split_packet(msg)[1])
+        if (self.current_seqno + 1) != ack_seqno:
+            print('false')
             return False
         return True
 
