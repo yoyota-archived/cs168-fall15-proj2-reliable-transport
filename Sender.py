@@ -78,24 +78,6 @@ class Sender(BasicSender.BasicSender):
     finish transmit
     """
 
-    def _retransmit(self):
-        self.send(self.seqnums[self.current_seqno])
-        msg = self.receive(timeout=self.timeout)
-        self._handle_packet(msg)
-
-    def _handle_packet(self, msg):
-        if not self._validate_packet(msg):
-            self._retransmit()
-            return
-        del self.seqnums[self.current_seqno]
-        self.current_seqno += 1
-
-    def _stop_and_wait_transport(self, packet):
-        self.seqnums[self.current_seqno] = packet
-        self.send(packet)
-        msg = self.receive(timeout=self.timeout)
-        self._handle_packet(msg)
-
     def _validate_packet(self, msg):
         # Loss, Delay, Corruption
         if not msg or not validate_checksum(msg):
@@ -104,9 +86,21 @@ class Sender(BasicSender.BasicSender):
         # Re-ordering, Duplication
         ack_seqno = int(self.split_packet(msg)[1])
         if (self.current_seqno + 1) != ack_seqno:
-            print('false')
             return False
         return True
+
+    def _handle_packet(self, msg):
+        while not self._validate_packet(msg):
+            self.send(self.seqnums[self.current_seqno])
+            msg = self.receive(timeout=self.timeout)
+        del self.seqnums[self.current_seqno]
+        self.current_seqno += 1
+
+    def _stop_and_wait_transport(self, packet):
+        self.seqnums[self.current_seqno] = packet
+        self.send(packet)
+        msg = self.receive(timeout=self.timeout)
+        self._handle_packet(msg)
 
     def start(self):
         syn = self.make_packet('syn', self.current_seqno, '')
