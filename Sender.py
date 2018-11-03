@@ -24,7 +24,7 @@ class Sender(BasicSender.BasicSender):
 
     def _check_fast_retransmit(self):
         if self.retransmit_count > 3:
-            self._retransmit()
+            self.send(self.window[self.current_seqno])
 
     def _validate_ack_seqno_range(self, ack_seqno):
         if ack_seqno > self.current_seqno + self.window_size:
