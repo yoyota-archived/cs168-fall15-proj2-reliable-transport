@@ -15,13 +15,28 @@ class Sender(BasicSender.BasicSender):
         self.current_seqno = 0
         self.window = {}
         self.window_size = 7
+        self.retransmit_count = 0
 
     def _retransmit(self):
+        self.retransmit_count = 0
         for n in sorted(self.window.keys()):
             self.send(self.window[n])
 
-    def _slide_window(self, msg):
-        ack_seqno = int(self.split_packet(msg)[1])
+    def _check_fast_retransmit(self):
+        if self.retransmit_count > 3:
+            self._retransmit()
+
+    def _validate_ack_seqno_range(self, ack_seqno):
+        if ack_seqno > self.current_seqno + self.window_size:
+            return False
+        if ack_seqno < self.current_seqno + 1:
+            self.retransmit_count += 1
+            self._check_fast_retransmit()
+            return False
+        return True
+
+    def _slide_window(self, ack_seqno):
+        self.retransmit_count = 0
         for n in sorted(self.window.keys()):
             if n < ack_seqno:
                 del self.window[n]
@@ -33,7 +48,11 @@ class Sender(BasicSender.BasicSender):
             self._retransmit()
         if not validate_checksum(msg):
             return
-        self._slide_window(msg)
+
+        ack_seqno = int(self.split_packet(msg)[1])
+        if not self._validate_ack_seqno_range(ack_seqno):
+            return
+        self._slide_window(ack_seqno)
 
     def _handshake(self):
         syn = self.make_packet('syn', self.current_seqno, '')

@@ -17,10 +17,10 @@ Your sender should provide reliable service under the following network conditio
 - Delay: packets may be delayed indefinitely (but in practice, generally not more than
 10s).
 
-### edge cases
-- TODO related #2 issue
+### Sliding window
+https://en.wikipedia.org/wiki/Sliding_window_protocol
 
-### packet loss article
+### packet loss
 https://www.performancevision.com/blog/network-packet-loss-retransmissions-and-duplicate-acknowledgements/
 
 
