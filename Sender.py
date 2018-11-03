@@ -19,10 +19,10 @@ class Sender(BasicSender.BasicSender):
 
     def _retransmit(self):
         self.retransmit_count = 0
-        unacknowledged_packets = [n for n in sorted(self.window.keys())
+        unacknowledged_seqnos = [n for n in sorted(self.window.keys())
                                   if self.window[n] is not None]
-        for n in unacknowledged_packets:
-            self.send(self.window[n])
+        for seqno in unacknowledged_seqnos:
+            self.send(self.window[seqno])
 
     def _check_fast_retransmit(self):
         if self.retransmit_count > 3:
