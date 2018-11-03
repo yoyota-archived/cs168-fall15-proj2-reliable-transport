@@ -19,14 +19,18 @@ class Sender(BasicSender.BasicSender):
 
     def _retransmit(self):
         self.retransmit_count = 0
-        for n in sorted(self.window.keys()):
-            self.send(self.window[n])
+        unacknowledged_seqnos = [n for n in sorted(self.window.keys())
+                                 if self.window[n] is not None]
+        for seqno in unacknowledged_seqnos:
+            self.send(self.window[seqno])
 
     def _check_fast_retransmit(self):
         if self.retransmit_count > 3:
-            self._retransmit()
+            self.send(self.window[self.current_seqno])
 
     def _validate_ack_seqno_range(self, ack_seqno):
+        if not ack_seqno:
+            return False
         if ack_seqno > self.current_seqno + self.window_size:
             return False
         if ack_seqno < self.current_seqno + 1:
@@ -42,14 +46,32 @@ class Sender(BasicSender.BasicSender):
                 del self.window[n]
         self.current_seqno = ack_seqno
 
-    def _handle_received_packet(self):
+    def _update_window_as_sack_list(self, sack_list):
+        if not sack_list:
+            return
+        int_sack_list = [int(x) for x in sack_list.split(',')]
+        for sack in [x for x in int_sack_list if x in self.window.keys()]:
+            self.window[sack] = None
+
+    def _get_parsed_ack_seqno(self, msg):
+        msg_type, seqno = self.split_packet(msg)[:2]
+        if msg_type == 'ack':
+            return int(seqno)
+
+        if msg_type == 'sack':
+            ack_seqno, sack_list = seqno.split(';')
+            self._update_window_as_sack_list(sack_list)
+            return int(ack_seqno)
+        return None
+
+    def _receive_packet_and_handle_it(self):
         msg = self.receive(timeout=self.timeout)
         if not msg:
             self._retransmit()
         if not validate_checksum(msg):
             return
 
-        ack_seqno = int(self.split_packet(msg)[1])
+        ack_seqno = self._get_parsed_ack_seqno(msg)
         if not self._validate_ack_seqno_range(ack_seqno):
             return
         self._slide_window(ack_seqno)
@@ -61,11 +83,11 @@ class Sender(BasicSender.BasicSender):
 
     def _empty_out_window(self):
         while self.window:
-            self._handle_received_packet()
+            self._receive_packet_and_handle_it()
 
     def _adjust_window_boundary(self):
         while len(self.window) > self.window_size - 1:
-            self._handle_received_packet()
+            self._receive_packet_and_handle_it()
 
     def _send_actual_data(self, data):
         msg_type = 'dat' if data else 'fin'
